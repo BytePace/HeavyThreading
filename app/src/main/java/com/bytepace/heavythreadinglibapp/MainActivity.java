@@ -15,6 +15,9 @@ import rx.Subscriber;
 public class MainActivity extends AppCompatActivity {
 
     TextView text_view;
+    private static final String PARAM_MAX = "max";
+    private static final String PARAM_DIVISION = "division";
+    private static final String PARAM_START_TIME = "start_time";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void singleThreadSimpleCount(final int to_max, final Runnable r) {
-        text_view.setText("Started single thread for " + to_max + " units");
+        text_view.setText(String.format(getString(R.string.started_single), to_max));
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -59,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        text_view.setText(text_view.getText() + "\nSINGLE THREAD   count = " + finalSimpleCount + "; time = " + (System.currentTimeMillis() - time));
+                        text_view.setText(String.format(getString(R.string.ended_single), text_view.getText(), finalSimpleCount, System.currentTimeMillis() - time));
                         r.run();
                     }
                 });
@@ -69,20 +72,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void multiThreadSimpleCount(int to_max) {
-        text_view.setText(text_view.getText() + "\nMultiple single thread for " + to_max + " units");
+        text_view.setText(String.format(getString(R.string.started_multiple), text_view.getText(), to_max));
         final int[] simpleCount = {0};
         long time = System.currentTimeMillis();
         Map<String, Long> params = new HashMap<>();
-        params.put("max", (long) to_max);
-        params.put("start_time", time);
-        params.put("division", 8L);
+        params.put(PARAM_MAX, (long) to_max);
+        params.put(PARAM_START_TIME, time);
+        params.put(PARAM_DIVISION, 8L);
         HeavyThreading.load(params, new HeavyThreading.LoaderInterface<Long, ArrayList<Integer>, Integer>() {
             @Override
             public void preThread(Subscriber<? super ArrayList<Integer>> subscriber, Map<String, Long> incoming_settings) {
                 ArrayList<Integer> batch = new ArrayList<>();
-                for (int i = 1; i <= incoming_settings.get("max"); i++) {
+                for (int i = 1; i <= incoming_settings.get(PARAM_MAX); i++) {
                     batch.add(i);
-                    if (batch.size() > incoming_settings.get("max") / incoming_settings.get("division")) {
+                    if (batch.size() > incoming_settings.get(PARAM_MAX) / incoming_settings.get(PARAM_DIVISION)) {
                         subscriber.onNext(batch);
                         batch = new ArrayList<>();
                     }
@@ -111,10 +114,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void doneThread(Map<String, Long> incoming_settings) {
-                long time = System.currentTimeMillis() - incoming_settings.get("start_time");
-                text_view.setText(text_view.getText() +
-                        "\nMULTIPLE THREAD   count = " + simpleCount[0] + "; time = " + time +
-                        "\ndone");
+                long time = System.currentTimeMillis() - incoming_settings.get(PARAM_START_TIME);
+                text_view.setText(String.format(getString(R.string.ended_multiple), text_view.getText(), simpleCount[0], time));
             }
         });
     }

@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">HeavyThreadingLibApp</string>
+    <string name="started_single">Started single thread for %d units</string>
+    <string name="ended_single">%s SINGLE THREAD count = %d; time = %d</string>
+    <string name="started_multiple">%s Started multiple thread for %d units</string>
+    <string name="ended_multiple">%s MULTIPLE THREAD count = %d; time = %d done</string>
 </resources>
